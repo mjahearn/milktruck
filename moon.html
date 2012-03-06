@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<!--
+Copyright 2008 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+  <title>Lunar Rover!</title>
+  <link rel=stylesheet href='moon.css' type='text/css' />
+  <!-- *** Replace the key below below with your own API key, available at http://code.google.com/apis/maps/signup.html *** -->
+  <script src="http://www.google.com/jsapi?key=ABQIAAAAwbkbZLyhsmTCWXbTcjbgbRSzHs7K5SvaUdm8ua-Xxy_-2dYwMxQMhnagaawTo7L1FE1-amhuQxIlXw"></script>
+  <script type="text/javascript" src="lib/math3d.js"></script>
+  <script type="text/javascript" src="lib/keyboard-focus-hack.js"></script>
+  <script type="text/javascript" src="lib/kmldomwalk.js"></script>
+  <script type="text/javascript" src="milktruck.js"></script>
+  <script type="text/javascript">
+MODEL_URL = PAGE_PATH + 'data/rover.kmz';
+INIT_LOC = {
+  lat: 0.68045372,
+  lon: 23.45974589,
+  heading: 0
+}; // apollo 11
+PREVENT_START_AIRBORNE = true;
+
+BALLOON_FG = '#FFFFFF';
+BALLOON_BG = '#000000';
+
+var regParams = {
+  ACCEL: window.ACCEL,
+  DECEL: window.DECEL,
+  MAX_REVERSE_SPEED: window.MAX_REVERSE_SPEED,
+  GRAVITY: window.GRAVITY
+};
+
+var moonParams = {
+  ACCEL: 10.0,
+  DECEL: 20.0,
+  MAX_REVERSE_SPEED: 5.0,
+  GRAVITY: 1.6
+};
+
+CAM_HEIGHT = 5;
+TRAILING_DISTANCE = 20;
+
+V3.EARTH_RADIUS = 1737100;
+
+IDLE_MESSAGES = [
+  "We've got core samples to collect!",
+  "Hello?",
+  "Dude, <font color=red><i>step on it!</i></font>",
+  "Houston's waiting!",
+  "We've got craters to hurdle!",
+  "Zzzzzzz"
+];
+
+FAST_MESSAGES = [
+  "Whoah there, cowboy!",
+  "Wheeeeeeeeee!",
+  "<font size=+5 color=#8080FF>ROCKY!</font>",
+  "Hey, we're hauling moon rocks here!"
+];
+
+
+google.load("earth", "1");
+
+var ge = null;
+var truck;
+
+function el(e) { return document.getElementById(e); }
+
+function init() {
+  switchParamsBox();
+  init3D();
+}
+
+function initCallback(object) {
+  ge = object;
+  ge.getWindow().setVisibility(true);
+  ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
+  
+  truck = new Truck();
+  createCompass();
+  
+  keyboardFocusHack(ge);
+  
+  // add Apollo mission KML
+  addKmlFromUrl(PAGE_PATH + 'data/apollo.kmz');
+}
+
+function addKmlFromUrl(kmlUrl) {
+  var link = ge.createLink('');
+  link.setHref(kmlUrl);
+
+  var networkLink = ge.createNetworkLink('');
+  networkLink.setLink(link);
+
+  ge.getFeatures().appendChild(networkLink);
+}
+
+function createCompass() {
+  // create compass
+  var icon = ge.createIcon('');
+  icon.setHref(PAGE_PATH + 'compass.png');
+  
+  var compass = ge.createScreenOverlay('');
+  compass.setDrawOrder(1);
+  compass.setIcon(icon);
+  compass.getScreenXY().set(0.5, ge.UNITS_FRACTION, 0.5, ge.UNITS_FRACTION);
+  compass.getOverlayXY().set(50, ge.UNITS_PIXELS, 50, ge.UNITS_PIXELS);
+  compass.getSize().set(-1, ge.UNITS_PIXELS, -1, ge.UNITS_PIXELS);
+  ge.getFeatures().appendChild(compass);
+  
+  google.earth.addEventListener(ge.getView(), 'viewchange', function() {
+    var compassHeading = truck.model.getOrientation().getHeading();
+    compass.setRotation(compassHeading);
+  });
+}
+
+function init3D() {
+  google.earth.createInstance("map3d", initCallback, function(){},
+      { database: 'http://khmdb.google.com/?db=moon' });
+}
+
+function switchParams(params) {
+  for (p in params)
+    window[p] = params[p];
+}
+
+function switchParamsBox() {
+  switchParams(el('faster').checked ? regParams : moonParams);
+}
+  </script>
+</head>
+<body onload='init()' onKeyDown="return keyDown(event);" onKeyUp="return keyUp(event);">
+<center>
+  <div class="title">
+    <center>
+      LUNAR ROVER!
+    </center>
+  </div>
+
+  <div id='map3d'></div>
+
+  <table>
+    <tr>
+      <td>
+	To drive: use the buttons, or keyboard arrows (with focus on page).
+
+	<div>
+	  <input type=button value="Apollo 11" onclick="truck.teleportTo(0.68045372,23.45974589,0);">
+	  <input type=button value="Apollo 12" onclick="truck.teleportTo(-3.02607580,-23.46237788,0);">
+	  <input type=button value="Apollo 14" onclick="truck.teleportTo(-3.65268661,-17.49482123,0);">
+	  <input type=button value="Apollo 15" onclick="truck.teleportTo(26.12830303,3.63351351,0);">
+	  <input type=button value="Apollo 16" onclick="truck.teleportTo(-8.99117036,15.47248297,0);">
+	  <input type=button value="Apollo 17" onclick="truck.teleportTo(20.19149458,30.76944279,0);">
+	</div>
+        <div><input type=checkbox onclick="switchParamsBox()" id="faster"/>
+             <label for="faster">Faster</label></div>
+
+
+      </td>
+      <td>
+        <table>
+	  <tr>
+	    <td></td>
+	    <td><input type=button class="button medw" onmousedown="gasButtonDown=true;" onmouseup="gasButtonDown = false;" value="gas"></td>
+	    <td></td>
+	  </tr>
+	  <tr>
+	    <td><input type=button class="button medw" onmousedown="leftButtonDown=true;" onmouseup="leftButtonDown=false;" value="left"></td>
+	    <td></td>
+	    <td><input type=button class="button medw" onmousedown="rightButtonDown=true;" onmouseup="rightButtonDown=false;" value="right"></td>
+	  </tr>
+	  <tr>
+	    <td></td>
+	    <td><input type=button class="button medw" onmousedown="reverseButtonDown=true;" onmouseup="reverseButtonDown=false;" value="reverse"></td>
+	    <td></td>
+	  </tr>
+	</table>
+      </td>
+    </tr>
+  </table>
+</center>
+</body>
+</html>
