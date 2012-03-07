@@ -484,13 +484,13 @@ Truck.prototype.tickPopups = function(dt) {
 };
 
 var IDLE_MESSAGES = [
-    "Let's deliver some milk!",
-    "Hello?",
+    "You're running out of time!!",
+    "Hey are you still there",
     "Dude, <font color=red><i>step on it!</i></font>",
-    "I'm sitting here getting sour!",
-    "We got customers waiting!",
+    "Someone is waiting for you! Hurry up!",
+    "We got passengers waiting!",
     "Zzzzzzz",
-    "Sometimes I wish I worked for UPS."
+    "We have so many places to go to! Hurry up!"
                      ];
 Truck.prototype.showIdlePopup = function() {
   var me = this;
@@ -504,10 +504,10 @@ Truck.prototype.showIdlePopup = function() {
 };
 
 var FAST_MESSAGES = [
-    "Whoah there, cowboy!",
+    "Oh yay! We're flying!",
     "Wheeeeeeeeee!",
-    "<font size=+5 color=#8080FF>Creamy!</font>",
-    "Hey, we're hauling glass bottles here!"
+    "<font size=+5 color=#8080FF>Crazy Taxi!</font>",
+    "Oh yay! We're gonna arrive in a few seconds!"
                      ];
 Truck.prototype.showFastPopup = function() {
   var me = this;
