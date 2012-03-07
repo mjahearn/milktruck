@@ -53,6 +53,11 @@ var placemark = null;
 var places = null;
 var curPlace = 0;
 
+var hasCustomer = false;
+
+var personmarks = null;
+var customers = null;
+
 function Truck() {
   var me = this;
 
@@ -93,7 +98,9 @@ function Truck() {
                                function(obj) { me.finishInit(obj); });
                                
   places = getPlaces();
-  newDestination();
+	customers = getCustomers();
+	showCustomers();
+  //newDestination();
 }
 
 Truck.prototype.finishInit = function(kml) {
@@ -414,15 +421,34 @@ Truck.prototype.tick = function() {
   
   me.cameraFollow(dt, gpos, me.localFrame);
   
-  var dist = distance(me.model.getLocation().getLatitude(),
-    me.model.getLocation().getLongitude(),
-    placemark.getGeometry().getLatitude(),
-    placemark.getGeometry().getLongitude());
-
-  if (dist < 5) {
-    ge.getFeatures().removeChild(placemark);
-    newDestination();
-  }
+	if (hasCustomer) {
+		var dist = distance(me.model.getLocation().getLatitude(),
+			me.model.getLocation().getLongitude(),
+			placemark.getGeometry().getLatitude(),
+			placemark.getGeometry().getLongitude());
+	
+		if (dist < 5) {
+			ge.getFeatures().removeChild(placemark);
+			hasCustomer = false;
+			showCustomers();
+		}
+	} else {
+		for (var a = 0; a < personmarks.length; a++) {
+			var dist = distance(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				personmarks[a].getGeometry().getLatitude(),
+				personmarks[a].getGeometry().getLongitude());
+			
+			if (dist < 5) {
+				for (var b = 0; b < personmarks.length; b++) {
+					ge.getFeatures().removeChild(personmarks[b]);
+				}
+				hasCustomer = true;
+				newDestination();
+				break;
+			}
+		}
+	}
 };
 
 // TODO: would be nice to have globe.getGroundNormal() in the API.
@@ -699,4 +725,35 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
+}
+
+function getCustomers() {
+	var result = new Array();
+	
+	//first item = index # (in places array) of the destination they want to go to
+	result[0] = new Array(2, 42.355778, -71.066667);
+	result[1] = new Array(0, 42.355778, -71.065667);
+	result[2] = new Array(1, 42.355778, -71.064667);
+	
+	return result;
+}
+
+function showCustomers() {
+	personmarks = new Array();
+	for (var a = 0; a < customers.length; a++) {
+		personmarks[a] = ge.createPlacemark('');
+		
+		var icon = ge.createIcon('');
+		icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
+		var style = ge.createStyle('');
+		style.getIconStyle().setIcon(icon);
+		personmarks[a].setStyleSelector(style);
+		
+		var point = ge.createPoint('');
+		point.setLatitude(customers[a][1]);
+		point.setLongitude(customers[a][2]);
+		personmarks[a].setGeometry(point);
+		
+		ge.getFeatures().appendChild(personmarks[a]);
+	}
 }
