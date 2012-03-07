@@ -700,3 +700,7 @@ function newDestination() {
   
   ge.getFeatures().appendChild(placemark);
 }
+
+function getNextDest() {
+	return places[curPlace][0];
+}
