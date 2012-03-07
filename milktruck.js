@@ -26,10 +26,10 @@ var MODEL_URL =
   + 'mid=3c9a1cac8c73c61b6284d71745f1efa9&rtyp=zip&'
   + 'fn=milktruck&ctyp=milktruck';
 var INIT_LOC = {
-  lat: 37.423501,
-  lon: -122.086744,
-  heading: 90
-}; // googleplex
+  lat: 42.352778,
+  lon: -71.066667,
+  heading: 0
+}; // boston common
 
 var PREVENT_START_AIRBORNE = false;
 var TICK_MS = 66;
@@ -48,6 +48,10 @@ var MAX_REVERSE_SPEED = 40.0;
 var STEER_ROLL = -1.0;
 var ROLL_SPRING = 0.5;
 var ROLL_DAMP = -0.16;
+
+var placemark = null;
+var places = null;
+var curPlace = 0;
 
 function Truck() {
   var me = this;
@@ -87,6 +91,9 @@ function Truck() {
 
   window.google.earth.fetchKml(ge, MODEL_URL,
                                function(obj) { me.finishInit(obj); });
+                               
+  places = getPlaces();
+  newDestination();
 }
 
 Truck.prototype.finishInit = function(kml) {
@@ -406,6 +413,16 @@ Truck.prototype.tick = function() {
   me.tickPopups(dt);
   
   me.cameraFollow(dt, gpos, me.localFrame);
+  
+  var dist = distance(me.model.getLocation().getLatitude(),
+    me.model.getLocation().getLongitude(),
+    placemark.getGeometry().getLatitude(),
+    placemark.getGeometry().getLongitude());
+
+  if (dist < 5) {
+    ge.getFeatures().removeChild(placemark);
+    newDestination();
+  }
 };
 
 // TODO: would be nice to have globe.getGroundNormal() in the API.
@@ -628,4 +645,58 @@ function fixAngle(a) {
     a -= 360;
   }
   return a;
+}
+
+/* Helper function, courtesy of
+   http://www.movable-type.co.uk/scripts/latlong.html */
+
+function distance(lat1, lng1, lat2, lng2) {
+  if (typeof(Number.prototype.toRad) === "undefined") {
+    Number.prototype.toRad = function() {
+      return this * Math.PI / 180;
+    }
+  }
+  var R = 6371000; // radius of Earth, in meters
+  var dLat = (lat2-lat1).toRad();
+  var dLon = (lng2-lng1).toRad();
+  var lat1 = lat1.toRad();
+  var lat2 = lat2.toRad();
+
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c;
+  return d;
+}
+
+
+function getPlaces() {
+  var result = new Array();
+  
+  result[0] = new Array("Meeting Spot", 42.353778, -71.066667);
+  result[1] = new Array("Vic's Car Dealership", 42.354778, -71.065667);
+  result[2] = new Array("The Watering Hole", 42.354778, -71.066667);
+  result[3] = new Array("County Jail", 42.353778, -71.065667);
+  
+  return result;
+}
+
+function newDestination() {
+  curPlace = Math.floor(Math.random()*places.length);
+  
+  placemark = ge.createPlacemark('');
+  placemark.setName(places[curPlace][0]);
+  
+  var icon = ge.createIcon('');
+  icon.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
+  var style = ge.createStyle('');
+  style.getIconStyle().setIcon(icon);
+  placemark.setStyleSelector(style);
+  
+  var point = ge.createPoint('');
+  point.setLatitude(places[curPlace][1]);
+  point.setLongitude(places[curPlace][2]);
+  placemark.setGeometry(point);
+  
+  ge.getFeatures().appendChild(placemark);
 }
