@@ -727,6 +727,11 @@ function newDestination() {
   ge.getFeatures().appendChild(placemark);
 }
 
+
+function getNextDest() {
+	return places[curPlace][0];
+	}
+
 function getCustomers() {
 	var result = new Array();
 	
