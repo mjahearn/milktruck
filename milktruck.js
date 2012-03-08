@@ -417,7 +417,7 @@ Truck.prototype.tick = function() {
   latLonBox.setWest(lla[1] + radius);
   latLonBox.setRotation(-newhtr[0]);
 
-  me.tickPopups(dt);
+  //me.tickPopups(dt);
   
   me.cameraFollow(dt, gpos, me.localFrame);
   
@@ -725,6 +725,7 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
+	showDestination();
 }
 
 function getCustomers() {
@@ -756,4 +757,21 @@ function showCustomers() {
 		
 		ge.getFeatures().appendChild(personmarks[a]);
 	}
+}
+
+function showDestination() {
+	/*var me = this.prototype;
+	me.popupTimer = 10.0;
+  me.balloon.setContentString(places[curPlace][0]);
+  ge.setBalloon(me.balloon);*/
+	var balloon = ge.createHtmlStringBalloon('');
+  balloon.setMaxWidth(300);
+
+  // Google logo.
+  balloon.setContentString(
+      '<img src="http://www.google.com/intl/en_ALL/images/logo.gif"><br>'
+      + '<font size=20>Earth Plugin</font><br><font size=-2>sample info '
+      + 'window</font>');
+
+  ge.setBalloon(balloon);
 }
