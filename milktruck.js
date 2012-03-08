@@ -728,6 +728,11 @@ function newDestination() {
 	showDestination();
 }
 
+
+function getNextDest() {
+	return places[curPlace][0];
+	}
+
 function getCustomers() {
 	var result = new Array();
 	
