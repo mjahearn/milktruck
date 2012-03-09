@@ -699,11 +699,54 @@ function distance(lat1, lng1, lat2, lng2) {
 function getPlaces() {
   var result = new Array();
   
-  result[0] = new Array("Meeting Spot", 42.353778, -71.066667);
+  /*result[0] = new Array("Meeting Spot", 42.353778, -71.066667);
   result[1] = new Array("Vic's Car Dealership", 42.354778, -71.065667);
   result[2] = new Array("The Watering Hole", 42.354778, -71.066667);
-  result[3] = new Array("County Jail", 42.353778, -71.065667);
-  
+  result[3] = new Array("County Jail", 42.353778, -71.065667);*/
+	
+	result[0] = new Array("Old North Church",
+		42.36643523315836, -71.05466734894992);
+  result[1] = new Array("City Hall",
+		42.3596374029632, -71.0586678872094);
+  result[2] = new Array("New England Aquarium",
+		42.35896991287691, -71.05067356325343);
+  result[3] = new Array("South Station", 
+		42.35251917380683, -71.05535827654184);
+	result[4] = new Array("Massachusetts General Hospital",
+		42.36241981594357, -71.06871799620129);
+  result[5] = new Array("Boston Common",
+		42.35527016681368, -71.06331744791147);
+  result[6] = new Array("Cheers Beacon Hill",
+		42.35585801045627, -71.07111904764524);
+  result[7] = new Array("TD Garden",
+		42.36629143721431, -71.06118465116826);
+	result[8] = new Array("Pizzeria Regina",
+		42.3653522106625, -71.05681891694918);
+  result[9] = new Array("Haymarket",
+		42.36165525867651, -71.0561346917995);
+  result[10] = new Array("Museum of Science",
+		42.36789096202344, -71.07107509890592);
+  result[11] = new Array("State House", 
+		42.35763919930955, -71.06354636401163);
+	result[12] = new Array("Faneuil Hall",
+		42.35994515655787, -71.05699986856368);
+  result[13] = new Array("Hatch Shell",
+		42.35723719043404, -71.07302736608241);
+  result[14] = new Array("Louisburg Square",
+		42.35882060575234, -71.06884559360742);
+  result[15] = new Array("Norman B. Leventhal Park",
+		42.35586516445154, -71.05529679549636);
+	result[16] = new Array("Paul Revere House",
+		42.36360434928332, -71.05366135635192);
+  result[17] = new Array("Emerson College",
+		42.35241637721636, -71.06595688928579);
+  result[18] = new Array("Boston Police Department",
+		42.36167462863499, -71.06018802254458);
+  result[19] = new Array("Public Garden",
+		42.35369416516925, -71.07150917512978);
+	result[20] = new Array("Downtown Crossing",
+		42.35495031378549, -71.05976844846495);
+	
   return result;
 }
 
@@ -740,7 +783,7 @@ function getCustomers() {
 	result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
 	result[2] = new Array(1, 42.355778, -71.064667);
-    result[2] = new Array(1, 42.395778, -71.068667);
+	//result[2] = new Array(1, 42.395778, -71.068667);
 
 	return result;
 }
