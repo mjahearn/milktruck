@@ -420,13 +420,14 @@ Truck.prototype.tick = function() {
   
   me.cameraFollow(dt, gpos, me.localFrame);
 	
+	var speed = V3.length(me.vel);
 	if (hasCustomer) {
 		var dist = distance(me.model.getLocation().getLatitude(),
 			me.model.getLocation().getLongitude(),
 			placemark.getGeometry().getLatitude(),
 			placemark.getGeometry().getLongitude());
 	
-		if (dist < 5) {
+		if (dist < 10 && speed < 5) {
 			ge.getFeatures().removeChild(placemark);
 			hasCustomer = false;
 			showCustomers();
@@ -438,7 +439,7 @@ Truck.prototype.tick = function() {
 				personmarks[a].getGeometry().getLatitude(),
 				personmarks[a].getGeometry().getLongitude());
 			
-			if (dist < 5) {
+			if (dist < 10 && speed < 5) {
 				for (var b = 0; b < personmarks.length; b++) {
 					ge.getFeatures().removeChild(personmarks[b]);
 				}
