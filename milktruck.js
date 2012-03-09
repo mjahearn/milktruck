@@ -94,7 +94,7 @@ function Truck() {
 
   window.google.earth.fetchKml(ge, MODEL_URL,
                                function(obj) { me.finishInit(obj); });
-															 
+
 	places = getPlaces();
 	customers = getCustomers();
 	showCustomers();
@@ -419,14 +419,14 @@ Truck.prototype.tick = function() {
   me.tickPopups(dt);
   
   me.cameraFollow(dt, gpos, me.localFrame);
-	
+
 	var speed = V3.length(me.vel);
 	if (hasCustomer) {
 		var dist = distance(me.model.getLocation().getLatitude(),
 			me.model.getLocation().getLongitude(),
 			placemark.getGeometry().getLatitude(),
 			placemark.getGeometry().getLongitude());
-	
+
 		if (dist < 10 && speed < 5) {
 			ge.getFeatures().removeChild(placemark);
 			hasCustomer = false;
@@ -438,7 +438,7 @@ Truck.prototype.tick = function() {
 				me.model.getLocation().getLongitude(),
 				personmarks[a].getGeometry().getLatitude(),
 				personmarks[a].getGeometry().getLongitude());
-			
+
 			if (dist < 10 && speed < 5) {
 				for (var b = 0; b < personmarks.length; b++) {
 					ge.getFeatures().removeChild(personmarks[b]);
@@ -725,7 +725,7 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
-	document.getElementById('destination').innerHTML = "Destination: <b>" +				places[curPlace][0] + "</b>";
+	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
 }
 
 
@@ -735,13 +735,13 @@ function newDestination() {
 
 function getCustomers() {
 	var result = new Array();
-	
+
 	//first item = index # (in places array) of the destination they want to go to
 	result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
 	result[2] = new Array(1, 42.355778, -71.064667);
     result[2] = new Array(1, 42.395778, -71.068667);
-	
+
 	return result;
 }
 
@@ -749,19 +749,23 @@ function showCustomers() {
 	personmarks = new Array();
 	for (var a = 0; a < customers.length; a++) {
 		personmarks[a] = ge.createPlacemark('');
-		
+
 		var icon = ge.createIcon('');
 		icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
 		var style = ge.createStyle('');
 		style.getIconStyle().setIcon(icon);
 		personmarks[a].setStyleSelector(style);
-		
+
 		var point = ge.createPoint('');
 		point.setLatitude(customers[a][1]);
 		point.setLongitude(customers[a][2]);
 		personmarks[a].setGeometry(point);
-		
+
 		ge.getFeatures().appendChild(personmarks[a]);
 	}
-	document.getElementById('destination').innerHTML = "<b>Pick up a passenger!</b>";
+	document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
+}
+
+function changeTextColor() {
+  document.getElementById('destination').style.color = '#ffffff';
 }
