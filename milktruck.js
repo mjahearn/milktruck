@@ -21,20 +21,13 @@ window.truck = null;
 
 // Pull the Milktruck model from 3D Warehouse.
 var PAGE_PATH = document.location.href.replace(/\/[^\/]+$/, '/');
-var MODEL_URL =
-  'http://sketchup.google.com/3dwarehouse/download?'
-  + 'mid=3c9a1cac8c73c61b6284d71745f1efa9&rtyp=zip&'
-  + 'fn=milktruck&ctyp=milktruck';
-//var INIT_LOC = {
-// lat: 42.352778,
-// lon: -71.066667,
-//  heading: 0
-//}; // boston common
+var MODEL_URL = 'http://web.mit.edu/eronsis/www/doc.kml';
 var INIT_LOC = {
-    lat: 42.362233,
-    lon: -71.098275,
-    heading: 0
-} //random hall
+ lat: 42.352778,
+ lon: -71.066667,
+  heading: 0
+}; // boston common
+
 var PREVENT_START_AIRBORNE = false;
 var TICK_MS = 66;
 
@@ -303,6 +296,7 @@ Truck.prototype.tick = function() {
     // velocity into forward velocity.
 
     // Damp sideways slip.  Ad-hoc frictiony hack.
+    //
     //
     // I'm using a damped exponential filter here, like:
     // val = val * c0 + val_new * (1 - c0)
