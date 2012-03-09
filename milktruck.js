@@ -25,12 +25,16 @@ var MODEL_URL =
   'http://sketchup.google.com/3dwarehouse/download?'
   + 'mid=3c9a1cac8c73c61b6284d71745f1efa9&rtyp=zip&'
   + 'fn=milktruck&ctyp=milktruck';
+//var INIT_LOC = {
+// lat: 42.352778,
+// lon: -71.066667,
+//  heading: 0
+//}; // boston common
 var INIT_LOC = {
-  lat: 42.352778,
-  lon: -71.066667,
-  heading: 0
-}; // boston common
-
+    lat: 42.362233,
+    lon: -71.098275,
+    heading: 0
+} //random hall
 var PREVENT_START_AIRBORNE = false;
 var TICK_MS = 66;
 
@@ -39,11 +43,12 @@ var BALLOON_BG = '#FFFFFF';
 
 var GRAVITY = 9.8;
 var CAM_HEIGHT = 10;
-var TRAILING_DISTANCE = 50;
+var TRAILING_DISTANCE = 20;
 
-var ACCEL = 50.0;
-var DECEL = 80.0;
-var MAX_REVERSE_SPEED = 40.0;
+var ACCEL = 15.0;
+var DECEL = 40.0;
+var MAX_REVERSE_SPEED = 20.0;
+var MAX_FORWARD_SPEED = 25.0;
 
 var STEER_ROLL = -1.0;
 var ROLL_SPRING = 0.5;
@@ -312,6 +317,7 @@ Truck.prototype.tick = function() {
 
     // Apply engine/reverse accelerations.
     forwardSpeed = V3.dot(dir, me.vel);
+    
     if (gasButtonDown) {
       // Accelerate forwards.
       me.vel = V3.add(me.vel, V3.scale(dir, ACCEL * dt));
@@ -511,11 +517,11 @@ Truck.prototype.tickPopups = function(dt) {
 
 var IDLE_MESSAGES = [
     "You're running out of time!!",
-    "Hey are you still there",
+    "Hey, are you still there?",
     "Dude, <font color=red><i>step on it!</i></font>",
     "Someone is waiting for you! Hurry up!",
-    "We got passengers waiting!",
-    "Zzzzzzz",
+    "We've got passengers waiting!",
+    "Zzzzzzz...",
     "We have so many places to go to! Hurry up!"
                      ];
 Truck.prototype.showIdlePopup = function() {
@@ -530,7 +536,7 @@ Truck.prototype.showIdlePopup = function() {
 };
 
 var FAST_MESSAGES = [
-    "Oh yay! We're flying!",
+    "We're flying!",
     "Wheeeeeeeeee!",
     "<font size=+5 color=#8080FF>Crazy Taxi!</font>",
     "Oh yay! We're gonna arrive in a few seconds!"
@@ -739,6 +745,7 @@ function getCustomers() {
 	result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
 	result[2] = new Array(1, 42.355778, -71.064667);
+    result[2] = new Array(1, 42.395778, -71.068667);
 	
 	return result;
 }
