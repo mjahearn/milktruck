@@ -50,6 +50,7 @@ var ROLL_DAMP = -0.16;
 var placemark = null;
 var places = null;
 var curPlace = 0;
+var number = 0;
 
 var hasCustomer = false;
 
@@ -768,13 +769,11 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
+  number = number + 1;
 	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
+	document.getElementById('number').innerHTML = "Passenger counter: <b>" + number + "</b>";
 }
 
-
-/*function getNextDest() {
-	return places[curPlace][0];
-}*/
 
 function getCustomers() {
 	var result = new Array();
@@ -811,4 +810,5 @@ function showCustomers() {
 
 function changeTextColor() {
   document.getElementById('destination').style.color = '#ffffff';
+  document.getElementById('number').style.color = '#ffffff';
 }

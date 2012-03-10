@@ -97,7 +97,11 @@ function doGeocode(address) {
 
 	<table border=3><tr>
 	<td id='destination'>Destination: <b>N/A</b></td>
-	</tr><tr><td>
+	</tr>
+	  <tr>
+	    <td id='number'>Passenger counter: <b>N/A</b></td>
+      </tr>
+	  <tr><td>
   <div id='map3d'></div>
 	</td></tr></table>
   <table>
@@ -126,17 +130,17 @@ function doGeocode(address) {
         <table>
 	  <tr>
 	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="gasButtonDown=true;" onmouseup="gasButtonDown = false;" value="gas"></td>
+	    <td><input type=button class="button medw" onmousedown="gasButtonDown=true;" onmouseup="gasButtonDown = false;" value="forward"></td>
 	    <td></td>
 	  </tr>
 	  <tr>
-	    <td><input type=button class="button medw" onmousedown="leftButtonDown=true;" onmouseup="leftButtonDown=false;" value="left"></td>
+	    <td><input type=button class="button medw" onmousedown="leftButtonDown=true;" onmouseup="leftButtonDown=false;" value="turn left"></td>
 	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="rightButtonDown=true;" onmouseup="rightButtonDown=false;" value="right"></td>
+	    <td><input type=button class="button medw" onmousedown="rightButtonDown=true;" onmouseup="rightButtonDown=false;" value="turn right"></td>
 	  </tr>
 	  <tr>
 	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="reverseButtonDown=true;" onmouseup="reverseButtonDown=false;" value="reverse"></td>
+	    <td><input type=button class="button medw" onmousedown="reverseButtonDown=true;" onmouseup="reverseButtonDown=false;" value="backward"></td>
 	    <td></td>
 	  </tr>
 	</table>
