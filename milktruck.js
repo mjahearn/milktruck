@@ -93,8 +93,7 @@ function Truck() {
   ge.getOptions().setMouseNavigationEnabled(false);
   ge.getOptions().setFlyToSpeed(100);  // don't filter camera motion
 
-  window.google.earth.fetchKml(ge, MODEL_URL,
-                               function(obj) { me.finishInit(obj); });
+  window.google.earth.fetchKml(ge, MODEL_URL, function(obj) { me.finishInit(obj); });
 
 	places = getPlaces();
 	customers = getCustomers();
@@ -212,9 +211,24 @@ function clamp(val, min, max) {
   return val;
 }
 
+function isColliding(t) {
+    var lat = t.model.getLocation().getLatitude();
+    var lon = t.model.getLocation().getLongitude();
+    var alt = t.model.getLocation().getAltitude();
+    var screencoords = ge.getView().project(lat,lon,alt,ge.ALTITUDE_ABSOLUTE);
+    var result = ge.getView().hitTest(screencoords.getX(), screencoords.getXUnits(), screencoords.getY(), screencoords.getYUnits(), ge.HIT_TEST_BUILDINGS);
+    if (result != null) {
+        var d = distance(lat, lon, result.getLatitude(), result.getLongitude());
+        if (d < 5) {
+            alert('collision! ' + d);
+        }
+    }
+    
+}
+
 Truck.prototype.tick = function() {
   var me = this;
-
+  isColliding(me);
   var now = (new Date()).getTime();
   // dt is the delta-time since last tick, in seconds
   var dt = (now - me.lastMillis) / 1000.0;
