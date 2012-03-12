@@ -94,10 +94,6 @@ function Truck() {
 
   window.google.earth.fetchKml(ge, MODEL_URL,
                                function(obj) { me.finishInit(obj); });
-
-	places = getPlaces();
-	customers = getCustomers();
-	showCustomers();
 }
 
 Truck.prototype.finishInit = function(kml) {
@@ -140,6 +136,10 @@ Truck.prototype.finishInit = function(kml) {
   me.shadow.getIcon().setHref(PAGE_PATH + 'shadowrect.png');
   me.shadow.setVisibility(true);
   ge.getFeatures().appendChild(me.shadow);
+
+	places = getPlaces();
+	customers = getCustomers();
+	showCustomers();
 
   google.earth.addEventListener(ge, "frameend", function() { me.tick(); });
 
@@ -782,8 +782,20 @@ function getCustomers() {
 	//first item = index # (in places array) of the destination they want to go to
 	result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
-	result[2] = new Array(1, 42.355778, -71.064667);
+	result[2] = new Array(1, 42.355778, -71.064667);*
 	//result[2] = new Array(1, 42.395778, -71.068667);
+	
+	/*var minLon = -71.073611;
+	var maxLon = -71.049722;
+	var minLat = 42.368611;
+	var maxLat = 41.351944;
+	for (var a = 0; a < 50; a++) {
+		var x = Math.random()*(maxLon-minLon)+minLon;
+		var y = Math.random()*(maxLat-minLat)+minLat;
+		var l = Math.random()*places.length;
+		
+		result[a] = new Array(l, y, x);
+	}*/
 
 	return result;
 }
