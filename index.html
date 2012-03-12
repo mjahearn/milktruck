@@ -97,13 +97,17 @@ function doGeocode(address) {
 
 	<table border=3><tr>
 	<td id='destination'>Destination: <b>N/A</b></td>
-	</tr><tr><td>
+	</tr>
+	  <tr>
+	    <td id='number'>Passenger counter: <b>0</b></td>
+      </tr>
+	  <tr><td>
   <div id='map3d'></div>
 	</td></tr></table>
   <table>
     <tr>
       <td>
-	To drive: use the buttons, or keyboard arrows (with focus on page).
+	To drive: use keyboard arrows (with focus on page).
 
 	<div>
 	  <form name='searchform' id='searchform' action='javascript:submitLocation();void(0);'>
@@ -112,34 +116,11 @@ function doGeocode(address) {
 	  </form>
 
 	  Presets:
-	  <input type=button value="Th' Plex" onclick="truck.teleportTo(37.423501,-122.086744,90);">
-	  <input type=button value="San Francisco" onclick="doGeocode('San Francisco');">
-	  <input type=button value="Whistler" onclick="truck.teleportTo(50.085734,-122.855824,220);">
-	  <input type=button value="Pismo" onclick="truck.teleportTo(35.040675,-120.629513,170);">
-	  <input type=button value="Tokyo" onclick="truck.teleportTo(35.668607,139.822026,180);">
-	  <input type=button value="Everest" onclick="truck.teleportTo(27.991283,86.924340,70);">
+	  <input type=button value="Gambit Game Lab" onclick="truck.teleportTo(42.362547,-71.086811,90);">
+	  <input type=button value="Park Street" onclick="truck.teleportTo(42.357358,-71.062846,90);">
 	</div>
 
 
-      </td>
-      <td>
-        <table>
-	  <tr>
-	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="gasButtonDown=true;" onmouseup="gasButtonDown = false;" value="gas"></td>
-	    <td></td>
-	  </tr>
-	  <tr>
-	    <td><input type=button class="button medw" onmousedown="leftButtonDown=true;" onmouseup="leftButtonDown=false;" value="left"></td>
-	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="rightButtonDown=true;" onmouseup="rightButtonDown=false;" value="right"></td>
-	  </tr>
-	  <tr>
-	    <td></td>
-	    <td><input type=button class="button medw" onmousedown="reverseButtonDown=true;" onmouseup="reverseButtonDown=false;" value="reverse"></td>
-	    <td></td>
-	  </tr>
-	</table>
       </td>
     </tr>
   </table>
