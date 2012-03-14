@@ -56,6 +56,7 @@ var hasCustomer = false;
 
 var personmarks = null;
 var customers = null;
+var custIsVisible = null;
 
 function Truck() {
   var me = this;
@@ -212,9 +213,24 @@ function clamp(val, min, max) {
   return val;
 }
 
+function isColliding(t) {
+    var lat = t.model.getLocation().getLatitude();
+    var lon = t.model.getLocation().getLongitude();
+    var alt = t.model.getLocation().getAltitude();
+    var screencoords = ge.getView().project(lat,lon,alt,ge.ALTITUDE_ABSOLUTE);
+    var result = ge.getView().hitTest(screencoords.getX(), screencoords.getXUnits(), screencoords.getY(), screencoords.getYUnits(), ge.HIT_TEST_BUILDINGS);
+    if (result != null) {
+        var d = distance(lat, lon, result.getLatitude(), result.getLongitude());
+        if (d < 5) {
+            alert('collision! ' + d);
+        }
+    }
+    
+}
+
 Truck.prototype.tick = function() {
   var me = this;
-
+  isColliding(me);
   var now = (new Date()).getTime();
   // dt is the delta-time since last tick, in seconds
   var dt = (now - me.lastMillis) / 1000.0;
@@ -431,9 +447,14 @@ Truck.prototype.tick = function() {
 		if (dist < 10 && speed < 5) {
 			ge.getFeatures().removeChild(placemark);
 			hasCustomer = false;
-			showCustomers();
+			showCustomers(me);
 		}
 	} else {
+		/*for (var a = 0; a < customers.length; a++) {
+			var d = distance(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				customers[a][1], customers[a][2]);
+		}*/
 		for (var a = 0; a < personmarks.length; a++) {
 			var dist = distance(me.model.getLocation().getLatitude(),
 				me.model.getLocation().getLongitude(),
@@ -788,7 +809,7 @@ function getCustomers() {
 	var maxLon = -71.049722;
 	var minLat = 42.368611;
 	var maxLat = 41.351944;
-	for (var a = 0; a < 500; a++) {
+	for (var a = 0; a < 2000; a++) {
 		var x = Math.random()*(maxLon-minLon)+minLon;
 		var y = Math.random()*(maxLat-minLat)+minLat;
 		var l = Math.random()*places.length;
@@ -801,28 +822,34 @@ function getCustomers() {
 
 function showCustomers(me) {
 	personmarks = new Array();
+	var minD = -1;
 	for (var a = 0; a < customers.length; a++) {
-		if (distance(me.model.getLocation().getLatitude(),
+		var d = distance(me.model.getLocation().getLatitude(),
 				me.model.getLocation().getLongitude(),
-				customers[a][1], customers[a][2]) < 1000) {
+				customers[a][1], customers[a][2]);
+		if (minD == -1 || d < minD) {
+			minD = d;
+		}
+		if (d < 500) {
 		/*if (distance(0, 0, customers[a][1], customers[a][2]) < 100) {*/
-			personmarks[a] = ge.createPlacemark('');
+			personmarks.push(ge.createPlacemark(''));
 		
 			var icon = ge.createIcon('');
 			icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
 			var style = ge.createStyle('');
 			style.getIconStyle().setIcon(icon);
-			personmarks[a].setStyleSelector(style);
+			personmarks[personmarks.length - 1].setStyleSelector(style);
 		
 			var point = ge.createPoint('');
 			point.setLatitude(customers[a][1]);
 			point.setLongitude(customers[a][2]);
-			personmarks[a].setGeometry(point);
+			personmarks[personmarks.length - 1].setGeometry(point);
 		
-			ge.getFeatures().appendChild(personmarks[a]);
+			ge.getFeatures().appendChild(personmarks[personmarks.length - 1]);
 		}
-	document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
 	}
+	//document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
+	document.getElementById('destination').innerHTML = minD.toString();
 }
 
 function changeTextColor() {
