@@ -140,7 +140,7 @@ Truck.prototype.finishInit = function(kml) {
 
 	places = getPlaces();
 	customers = getCustomers();
-	showCustomers();
+	showCustomers(me);
 
   google.earth.addEventListener(ge, "frameend", function() { me.tick(); });
 
@@ -779,45 +779,50 @@ function getCustomers() {
 	var result = new Array();
 
 	//first item = index # (in places array) of the destination they want to go to
-	result[0] = new Array(2, 42.355778, -71.066667);
+	/*result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
-	result[2] = new Array(1, 42.355778, -71.064667);*
+	result[2] = new Array(1, 42.355778, -71.064667);*/
 	//result[2] = new Array(1, 42.395778, -71.068667);
 	
-	/*var minLon = -71.073611;
+	var minLon = -71.073611;
 	var maxLon = -71.049722;
 	var minLat = 42.368611;
 	var maxLat = 41.351944;
-	for (var a = 0; a < 50; a++) {
+	for (var a = 0; a < 500; a++) {
 		var x = Math.random()*(maxLon-minLon)+minLon;
 		var y = Math.random()*(maxLat-minLat)+minLat;
 		var l = Math.random()*places.length;
 		
 		result[a] = new Array(l, y, x);
-	}*/
+	}
 
 	return result;
 }
 
-function showCustomers() {
+function showCustomers(me) {
 	personmarks = new Array();
 	for (var a = 0; a < customers.length; a++) {
-		personmarks[a] = ge.createPlacemark('');
-
-		var icon = ge.createIcon('');
-		icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
-		var style = ge.createStyle('');
-		style.getIconStyle().setIcon(icon);
-		personmarks[a].setStyleSelector(style);
-
-		var point = ge.createPoint('');
-		point.setLatitude(customers[a][1]);
-		point.setLongitude(customers[a][2]);
-		personmarks[a].setGeometry(point);
-
-		ge.getFeatures().appendChild(personmarks[a]);
-	}
+		if (distance(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				customers[a][1], customers[a][2]) < 1000) {
+		/*if (distance(0, 0, customers[a][1], customers[a][2]) < 100) {*/
+			personmarks[a] = ge.createPlacemark('');
+		
+			var icon = ge.createIcon('');
+			icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
+			var style = ge.createStyle('');
+			style.getIconStyle().setIcon(icon);
+			personmarks[a].setStyleSelector(style);
+		
+			var point = ge.createPoint('');
+			point.setLatitude(customers[a][1]);
+			point.setLongitude(customers[a][2]);
+			personmarks[a].setGeometry(point);
+		
+			ge.getFeatures().appendChild(personmarks[a]);
+		}
 	document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
+	}
 }
 
 function changeTextColor() {
