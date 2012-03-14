@@ -222,15 +222,16 @@ function isColliding(t) {
     if (result != null) {
         var d = distance(lat, lon, result.getLatitude(), result.getLongitude());
         if (d < 5) {
-            alert('collision! ' + d);
+            return d;
         }
     }
+    return null
     
 }
 
 Truck.prototype.tick = function() {
   var me = this;
-  isColliding(me);
+  
   var now = (new Date()).getTime();
   // dt is the delta-time since last tick, in seconds
   var dt = (now - me.lastMillis) / 1000.0;
@@ -238,6 +239,7 @@ Truck.prototype.tick = function() {
     dt = 0.25;
   }
   me.lastMillis = now;
+  me.lastCollision = 0;
 
   var c0 = 1;
   var c1 = 0;
@@ -372,6 +374,13 @@ Truck.prototype.tick = function() {
   me.vel[2] -= GRAVITY * dt;
 
   // Move.
+  d = isColliding(me);
+  if(d != null && now - me.lastCollision > 500) {
+    me.vel = V3.scale(me.vel, -0.70);
+    me.pos = V3.add(me.pos, V3.scale(me.vel, 4*dt));
+  }
+
+  
   var deltaPos = V3.scale(me.vel, dt);
   me.pos = V3.add(me.pos, deltaPos);
 
@@ -386,6 +395,7 @@ Truck.prototype.tick = function() {
   }
 
   var normal = estimateGroundNormal(gpos, me.localFrame);
+  
   
   if (!airborne) {
     // Cancel velocity into the ground.
@@ -405,6 +415,8 @@ Truck.prototype.tick = function() {
     me.modelFrame = M33.makeOrthonormalFrame(dir, blendedUp);
   }
 
+  
+  
   // Propagate our state into Earth.
   gpos = V3.add(me.localAnchorCartesian,
                 M33.transform(me.localFrame, me.pos));
