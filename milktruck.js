@@ -47,14 +47,18 @@ var STEER_ROLL = -1.0;
 var ROLL_SPRING = 0.5;
 var ROLL_DAMP = -0.16;
 
+var NUM_PASSENGERS = 2000;
+var PASSENGER_THRESHOLD = 500;
+
 var placemark = null;
 var places = null;
 var curPlace = 0;
-var number = 0;
+var passengerCounter = 0;
 
 var hasCustomer = false;
 
 var personmarks = null;
+var pmIndices = null;
 var customers = null;
 var custIsVisible = null;
 
@@ -450,9 +454,10 @@ Truck.prototype.tick = function() {
   me.cameraFollow(dt, gpos, me.localFrame);
 
 	var speed = V3.length(me.vel);
+	var realPos = new Array(me.model.getLocation().getLatitude(),
+		me.model.getLocation().getLongitude());
 	if (hasCustomer) {
-		var dist = distance(me.model.getLocation().getLatitude(),
-			me.model.getLocation().getLongitude(),
+		var dist = distance(realPos[0], realPos[1],
 			placemark.getGeometry().getLatitude(),
 			placemark.getGeometry().getLongitude());
 
@@ -462,18 +467,21 @@ Truck.prototype.tick = function() {
 			showCustomers(me);
 		}
 	} else {
-		/*for (var a = 0; a < customers.length; a++) {
-			var d = distance(me.model.getLocation().getLatitude(),
-				me.model.getLocation().getLongitude(),
-				customers[a][1], customers[a][2]);
-		}*/
+		for (var b = 0; b < customers.length; b++) {
+			var d = distance(realPos[0], realPos[1],
+				customers[b][1], customers[b][2]);
+			if (d < PASSENGER_THRESHOLD && !custIsVisible[b]) {
+				addPersonmark(b);
+			}
+		}
 		for (var a = 0; a < personmarks.length; a++) {
-			var dist = distance(me.model.getLocation().getLatitude(),
-				me.model.getLocation().getLongitude(),
+			var dist = distance(realPos[0], realPos[1],
 				personmarks[a].getGeometry().getLatitude(),
 				personmarks[a].getGeometry().getLongitude());
-
-			if (dist < 10 && speed < 5) {
+			
+			if (dist > PASSENGER_THRESHOLD) {
+				removePersonmark(a);
+			} else if (dist < 10 && speed < 5) {
 				for (var b = 0; b < personmarks.length; b++) {
 					ge.getFeatures().removeChild(personmarks[b]);
 				}
@@ -802,31 +810,32 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
-  number = number + 1;
+  passengerCounter = passengerCounter + 1;
 	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
-	document.getElementById('number').innerHTML = "Passenger counter: <b>" + number + "</b>";
+	document.getElementById('number').innerHTML = "Passenger counter: <b>" + passengerCounter + "</b>";
 }
 
 
 function getCustomers() {
 	var result = new Array();
+	custIsVisible = new Array();
 
 	//first item = index # (in places array) of the destination they want to go to
 	/*result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
 	result[2] = new Array(1, 42.355778, -71.064667);*/
-	//result[2] = new Array(1, 42.395778, -71.068667);
 	
 	var minLon = -71.073611;
 	var maxLon = -71.049722;
-	var minLat = 42.368611;
-	var maxLat = 41.351944;
-	for (var a = 0; a < 2000; a++) {
+	var minLat = 41.351944;
+	var maxLat = 42.368611;
+	for (var a = 0; a < NUM_PASSENGERS; a++) {
 		var x = Math.random()*(maxLon-minLon)+minLon;
 		var y = Math.random()*(maxLat-minLat)+minLat;
 		var l = Math.random()*places.length;
 		
 		result[a] = new Array(l, y, x);
+		custIsVisible[a] = false;
 	}
 
 	return result;
@@ -834,6 +843,7 @@ function getCustomers() {
 
 function showCustomers(me) {
 	personmarks = new Array();
+	pmIndices = new Array();
 	var minD = -1;
 	for (var a = 0; a < customers.length; a++) {
 		var d = distance(me.model.getLocation().getLatitude(),
@@ -842,29 +852,41 @@ function showCustomers(me) {
 		if (minD == -1 || d < minD) {
 			minD = d;
 		}
-		if (d < 500) {
-		/*if (distance(0, 0, customers[a][1], customers[a][2]) < 100) {*/
-			personmarks.push(ge.createPlacemark(''));
-		
-			var icon = ge.createIcon('');
-			icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
-			var style = ge.createStyle('');
-			style.getIconStyle().setIcon(icon);
-			personmarks[personmarks.length - 1].setStyleSelector(style);
-		
-			var point = ge.createPoint('');
-			point.setLatitude(customers[a][1]);
-			point.setLongitude(customers[a][2]);
-			personmarks[personmarks.length - 1].setGeometry(point);
-		
-			ge.getFeatures().appendChild(personmarks[personmarks.length - 1]);
+		if (d < PASSENGER_THRESHOLD) {
+			addPersonmark(a);
 		}
 	}
-	//document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
-	document.getElementById('destination').innerHTML = minD.toString();
+	document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
+	//document.getElementById('destination').innerHTML = minD.toString();
 }
 
 function changeTextColor() {
   document.getElementById('destination').style.color = '#ffffff';
   document.getElementById('number').style.color = '#ffffff';
+}
+
+function addPersonmark(ind) {
+	personmarks.push(ge.createPlacemark(''));
+	pmIndices.push(ind);
+		
+	var icon = ge.createIcon('');
+	icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
+	var style = ge.createStyle('');
+	style.getIconStyle().setIcon(icon);
+	personmarks[personmarks.length - 1].setStyleSelector(style);
+	
+	var point = ge.createPoint('');
+	point.setLatitude(customers[ind][1]);
+	point.setLongitude(customers[ind][2]);
+	personmarks[personmarks.length - 1].setGeometry(point);
+	
+	custIsVisible[ind] = true;
+	ge.getFeatures().appendChild(personmarks[personmarks.length - 1]);
+}
+
+function removePersonmark(ind) {
+	custIsVisible[pmIndices[ind]] = false;
+	ge.getFeatures().removeChild(personmarks[ind]);
+	personmarks.splice(ind,1);
+	pmIndices.splice(ind,1);
 }
