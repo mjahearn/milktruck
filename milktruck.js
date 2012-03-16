@@ -63,6 +63,7 @@ var customers = null;
 var custIsVisible = null;
 
 var destPointer = null;
+var directions = null;
 
 function Truck() {
   var me = this;
@@ -455,10 +456,15 @@ Truck.prototype.tick = function() {
   me.tickPopups(dt);
   
   me.cameraFollow(dt, gpos, me.localFrame);
-
+	
 	var speed = V3.length(me.vel);
 	var realPos = new Array(me.model.getLocation().getLatitude(),
 		me.model.getLocation().getLongitude());
+	var realGPos = new GLatLng(realPos[0], realPos[1]);
+	
+	map.panTo(realGPos);
+	playerMarker.setLatLng(realGPos);
+	
 	if (hasCustomer) {
 		var dist = distance(realPos[0], realPos[1],
 			placemark.getGeometry().getLatitude(),
@@ -491,7 +497,7 @@ Truck.prototype.tick = function() {
 				}
 				hasCustomer = true;
 				ge.getFeatures().appendChild(destPointer);
-				newDestination();
+				newDestination(me);
 				break;
 			}
 		}
@@ -811,7 +817,7 @@ function getPlaces() {
   return result;
 }
 
-function newDestination() {
+function newDestination(me) {
   curPlace = Math.floor(Math.random()*places.length);
   
   placemark = ge.createPlacemark('');
@@ -832,8 +838,18 @@ function newDestination() {
   passengerCounter = passengerCounter + 1;
 	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
 	document.getElementById('number').innerHTML = "Passenger counter: <b>" + passengerCounter + "</b>";
+	
+	directions = new GDirections(map);
+  directions.load("from: " + me.model.getLocation().getLatitude().toString()
+		+ "," + me.model.getLocation().getLongitude().toString()
+		+ " to: " + places[curPlace][1].toString()
+		+ "," + places[curPlace][2].toString());
 }
 
+
+function handleErrors() {
+	document.getElementById('destination').innerHTML = "oh no";
+}
 
 function getCustomers() {
 	var result = new Array();
@@ -861,6 +877,9 @@ function getCustomers() {
 }
 
 function showCustomers(me) {
+	if (directions != null){
+		directions.clear();
+	}
 	personmarks = new Array();
 	pmIndices = new Array();
 	var minD = -1;
