@@ -38,7 +38,7 @@ function Down() {
 	csec2--;
 	if(csec2==-1) { csec2=59; cmin2--; }
 	document.sw.disp2.value=Display(cmin2,csec2);
-	if((cmin2==0)&&(csec2==0)) alert("Timer-CountDown Stopped");
+	if((cmin2==0)&&(csec2==0)) alert("Time runs out! Game over.");
 	else down=setTimeout("DownRepeat()",1000); }
 // End -->
 
@@ -142,16 +142,22 @@ function doGeocode(address) {
 <center>
 	<table border=3 bgcolor="#000000">
 		<tr>
-			<td id='destination'>Destination: <b>N/A</b></td>
-			<td><div class="title">
-				<center>
-					<img src="title.png" title="title" align="middle" height="160" width="320"/>
-				</center>
-				</div>
-			</td>
-			<td id='number'>Passenger counter: <b>0</b></td>
+			<td rowspan="2" id='title'><div class="title">
+			  <center>
+			    <img src="title.png" title="title" align="middle" height="160" width="320"/>
+		      </center>
+			  </div>		    </td>
+			<td height="127" id='destination'>Destination: <b>N/A</b></td>
 		</tr>
-		<tr><td rowspan="3" colspan="2">
+		<tr>
+		  <td id='money'>Money earned: <b>0</b></td>
+	  </tr>
+		<tr>
+		  <td id='none'>&nbsp;</td>
+        <td id='number'>Passenger counter: <b>0</b>
+		  </td>
+	  </tr>
+		<tr><td rowspan="3">
 		<div id='map3d'></div>
 		</td><FORM name="sw" >
 		<td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />

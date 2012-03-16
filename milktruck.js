@@ -54,6 +54,8 @@ var placemark = null;
 var places = null;
 var curPlace = 0;
 var passengerCounter = 0;
+var money = 0;
+var atStake = 0;
 
 var hasCustomer = false;
 
@@ -474,6 +476,8 @@ Truck.prototype.tick = function() {
 			ge.getFeatures().removeChild(placemark);
 			ge.getFeatures().removeChild(destPointer);
 			hasCustomer = false;
+			money += atStake;
+			document.getElementById('money').innerHTML = "Money earned: <b>" + money + "</b>";
 			showCustomers(me);
 		}
 	} else {
@@ -836,7 +840,11 @@ function newDestination(me) {
   
   ge.getFeatures().appendChild(placemark);
   passengerCounter = passengerCounter + 1;
-	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
+	atStake = Math.round(0.1*distance(me.model.getLocation().getLatitude(),
+		me.model.getLocation().getLongitude(),
+		places[curPlace][1],
+		places[curPlace][2]));
+	document.getElementById('destination').innerHTML = "Find the red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
 	document.getElementById('number').innerHTML = "Passenger counter: <b>" + passengerCounter + "</b>";
 	
 	directions = new GDirections(map);
@@ -902,6 +910,7 @@ function changeTextColor() {
   document.getElementById('destination').style.color = '#ffffff';
   document.getElementById('number').style.color = '#ffffff';
   document.getElementById('timerRow').style.color = '#ffffff';
+  document.getElementById('money').style.color = '#ffffff';
   
 }
 
