@@ -825,4 +825,6 @@ function showCustomers() {
 function changeTextColor() {
   document.getElementById('destination').style.color = '#ffffff';
   document.getElementById('number').style.color = '#ffffff';
+  document.getElementById('timerRow').style.color = '#ffffff';
+  
 }
