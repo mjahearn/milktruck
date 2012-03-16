@@ -38,7 +38,7 @@ var GRAVITY = 9.8;
 var CAM_HEIGHT = 10;
 var TRAILING_DISTANCE = 20;
 
-var ACCEL = 15.0;
+var ACCEL = 25.0;
 var DECEL = 40.0;
 var MAX_REVERSE_SPEED = 20.0;
 var MAX_FORWARD_SPEED = 25.0;
@@ -219,7 +219,7 @@ function isColliding(t) {
     var result = ge.getView().hitTest(screencoords.getX(), screencoords.getXUnits(), screencoords.getY(), screencoords.getYUnits(), ge.HIT_TEST_BUILDINGS);
     if (result != null) {
         var d = distance(lat, lon, result.getLatitude(), result.getLongitude());
-        if (d < 5) {
+        if (d < 8) {
             return d;
         }
     }
