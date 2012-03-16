@@ -143,7 +143,7 @@ Truck.prototype.finishInit = function(kml) {
   me.shadow.setLatLonBox(ge.createLatLonBox(''));
   me.shadow.setAltitudeMode(ge.ALTITUDE_CLAMP_TO_SEA_FLOOR);
   me.shadow.getIcon().setHref(PAGE_PATH + 'shadowrect.png');
-  me.shadow.setVisibility(true);
+  me.shadow.setVisibility(false);
   ge.getFeatures().appendChild(me.shadow);
 
 	places = getPlaces();
@@ -384,7 +384,7 @@ Truck.prototype.tick = function() {
   // Move.
   d = isColliding(me);
   if(d != null && now - me.lastCollision > 500) {
-    me.vel = V3.scale(me.vel, -0.70);
+    me.vel = V3.scale(me.vel, -0.30);
     me.pos = V3.add(me.pos, V3.scale(me.vel, 4*dt));
   }
 

@@ -156,7 +156,7 @@ function doGeocode(address) {
 		</td><FORM name="sw" >
 		<td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />
 	      (Starts at
-            <input type="text" name="beg2" size="7" value="1:30" />
+            <input type="text" name="beg2" size="7" value="3:30" />
 	      Time remaining:
 <input type="text" name="disp2" size="9" />        
         )</td></FORM>    
@@ -167,12 +167,12 @@ function doGeocode(address) {
 
 	<div>
 	  <form name='searchform' id='searchform' action='javascript:submitLocation();void(0);'>
-	    <input type=text size=60 id='address' value='(enter a location to go there)'></input>
+	    <input type=text size=50 id='address' value='(enter a location to go there)'></input>
 	    <input type=submit value='Teleport!'>
 	  </form>
 
 	  Presets:
-	  <input type=button value="Gambit Game Lab" onclick="truck.teleportTo(42.362547,-71.086811,90);">
+	  <input type=button value="Gambit Game Lab" onclick="truck.teleportTo(42.362547,-71.087911,90);">
 	  <input type=button value="Park Street" onclick="truck.teleportTo(42.357358,-71.062846,90);">
 	</div>
 
