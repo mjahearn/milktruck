@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html>
+<head>
+<SCRIPT LANGUAGE="JavaScript">
+var up,down;
+var min1,sec1;
+var cmin1,csec1,cmin2,csec2;
+function Minutes(data) {
+	for(var i=0;i<data.length;i++) if(data.substring(i,i+1)==":") break;
+	return(data.substring(0,i)); }
+function Seconds(data) {
+	for(var i=0;i<data.length;i++) if(data.substring(i,i+1)==":") break;
+	return(data.substring(i+1,data.length)); }
+function Display(min,sec) {
+	var disp;
+	if(min<=9) disp=" 0";
+	else disp=" ";
+	disp+=min+":";
+	if(sec<=9) disp+="0"+sec;
+	else disp+=sec;
+	return(disp); }
+function Up() {
+	cmin1=0;
+	csec1=0;
+	min1=0+Minutes(document.sw.beg1.value);
+	sec1=0+Seconds(document.sw.beg1.value);
+	UpRepeat(); }
+	function UpRepeat() {
+	csec1++;
+	if(csec1==60) { csec1=0; cmin1++; }
+	document.sw.disp1.value=Display(cmin1,csec1);
+	if((cmin1==min1)&&(csec1==sec1)) alert("Time's up!");
+	else up=setTimeout("UpRepeat()",1000); }
+function Down() {
+	cmin2=1*Minutes(document.sw.beg2.value);
+	csec2=0+Seconds(document.sw.beg2.value);
+	DownRepeat(); }
+	function DownRepeat() {
+	csec2--;
+	if(csec2==-1) { csec2=59; cmin2--; }
+	document.sw.disp2.value=Display(cmin2,csec2);
+	if((cmin2==0)&&(csec2==0)) alert("Time runs out! Game over.");
+	else down=setTimeout("DownRepeat()",1000); }
+// End -->
+
+</SCRIPT>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<!--
+Copyright 2008 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+  <title>The Ride!</title>
+  <link rel=stylesheet href='milktruck.css' type='text/css' />
+	<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script> -->
+  <!-- *** Replace the key below below with your own API key, available at http://code.google.com/apis/maps/signup.html *** -->
+ <script src="https://www.google.com/jsapi"></script>
+ <script src="//maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=AIzaSyD4iE2xVSpkLLOXoyqT-RuPwURN3ddScAI" type="text/javascript"></script>
+  <script type="text/javascript" src="lib/math3d.js"></script>
+  <script type="text/javascript" src="lib/keyboard-focus-hack.js"></script>
+  <script type="text/javascript" src="lib/kmldomwalk.js"></script>
+  <script type="text/javascript" src="milktruck.js"></script>
+  <script type="text/javascript">
+google.load("earth", "1");
+google.load("maps", "2");
+
+var ge = null;
+var geocoder;
+var truck;
+var map = null;
+var playerMarker = null;
+
+function el(e) { return document.getElementById(e); }
+
+function Sample(description, url) {
+  this.description = description;
+  this.url = url;
+  return this;
+}
+
+var samples = [];
+
+function init() {
+  geocoder = new GClientGeocoder();
+	map = new GMap2(document.getElementById("map2d"));
+	map.setCenter(new GLatLng(42.352778, -71.066667), 15);
+	var playerIcon = new GIcon(G_DEFAULT_ICON);
+	playerIcon.image = "http://www.google.com/mapfiles/dd-start.png";
+	playerMarker = new GMarker(new GLatLng(42.352778, -71.066667), { icon:playerIcon });
+	map.addOverlay(playerMarker);
+  init3D();
+}
+
+function initCallback(object) {
+  ge = object;
+  ge.getWindow().setVisibility(true);
+  ge.getLayerRoot().enableLayerById(ge.LAYER_BUILDINGS, true);
+  ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
+  
+  truck = new Truck();
+  
+  keyboardFocusHack(ge);
+}
+
+function failureCallback(err) {
+  /***
+   * This function will be called if plugin fails to load, in case
+   * you need to handle that error condition.
+   ***/
+}
+
+function init3D() {
+  google.earth.createInstance("map3d", initCallback, failureCallback);
+}
+
+function submitLocation() {
+  doGeocode(el('address').value);
+}
+
+function doGeocode(address) {
+  geocoder.getLatLng(address, function(point) {
+    if (point) {
+      if (ge != null && truck != null) {
+        truck.teleportTo(point.y, point.x);
+      }
+    }
+  });
+}
+
+  </script>
+</head>
+<body onload='init()' onunload="GUnload()" onKeyDown="return keyDown(event);" onKeyUp="return keyUp(event);" bgcolor="#000000">
+<center>
+	<table border=3 bgcolor="#000000">
+		<tr>
+			<td rowspan="2" id='title'><div class="title">
+			  <center>
+			    <img src="title.png" title="title" align="middle" height="160" width="320"/>
+		      </center>
+			  </div>		    </td>
+			<td height="127" id='destination'>Destination: <b>N/A</b></td>
+		</tr>
+		<tr>
+		  <td id='money'>Money earned: <b>0</b></td>
+	  </tr>
+		<tr>
+		  <td id='none'>&nbsp;</td>
+        <td id='number'>Passenger counter: <b>0</b>
+		  </td>
+	  </tr>
+		<tr><td rowspan="3">
+		<div id='map3d'></div>
+		</td><FORM name="sw" >
+		<td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />
+	      (Starts at
+            <input type="text" name="beg2" size="7" value="3:30" />
+	      Time remaining:
+<input type="text" name="disp2" size="9" />        
+        )</td></FORM>    
+      </tr>
+    <tr>
+      <td id='instructions'>
+	To drive: use keyboard arrows (with focus on page).
+
+	<div>
+	  <form name='searchform' id='searchform' action='javascript:submitLocation();void(0);'>
+	    <input type=text size=50 id='address' value='(enter a location to go there)'></input>
+	    <input type=submit value='Teleport!'>
+	  </form>
+
+	  Presets:
+	  <input type=button value="Gambit Game Lab" onclick="truck.teleportTo(42.362547,-71.087911,90);">
+	  <input type=button value="Park Street" onclick="truck.teleportTo(42.357358,-71.062846,90);">
+	</div>
+
+
+      </td>
+    </tr>
+		<tr>
+			<td><div id='map2d'></div>
+			</td>
+		</tr>
+  </table>
+
+</center>
+</body>
+</html>
