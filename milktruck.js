@@ -38,7 +38,7 @@ var GRAVITY = 9.8;
 var CAM_HEIGHT = 10;
 var TRAILING_DISTANCE = 20;
 
-var ACCEL = 15.0;
+var ACCEL = 25.0;
 var DECEL = 40.0;
 var MAX_REVERSE_SPEED = 20.0;
 var MAX_FORWARD_SPEED = 25.0;
@@ -47,15 +47,23 @@ var STEER_ROLL = -1.0;
 var ROLL_SPRING = 0.5;
 var ROLL_DAMP = -0.16;
 
+var NUM_PASSENGERS = 2000;
+var PASSENGER_THRESHOLD = 500;
+
 var placemark = null;
 var places = null;
 var curPlace = 0;
-var number = 0;
+var passengerCounter = 0;
 
 var hasCustomer = false;
 
 var personmarks = null;
+var pmIndices = null;
 var customers = null;
+var custIsVisible = null;
+
+var destPointer = null;
+var directions = null;
 
 function Truck() {
   var me = this;
@@ -93,11 +101,8 @@ function Truck() {
   ge.getOptions().setMouseNavigationEnabled(false);
   ge.getOptions().setFlyToSpeed(100);  // don't filter camera motion
 
-  window.google.earth.fetchKml(ge, MODEL_URL, function(obj) { me.finishInit(obj); });
-
-	places = getPlaces();
-	customers = getCustomers();
-	showCustomers();
+  window.google.earth.fetchKml(ge, MODEL_URL,
+                               function(obj) { me.finishInit(obj); });
 }
 
 Truck.prototype.finishInit = function(kml) {
@@ -138,8 +143,13 @@ Truck.prototype.finishInit = function(kml) {
   me.shadow.setLatLonBox(ge.createLatLonBox(''));
   me.shadow.setAltitudeMode(ge.ALTITUDE_CLAMP_TO_SEA_FLOOR);
   me.shadow.getIcon().setHref(PAGE_PATH + 'shadowrect.png');
-  me.shadow.setVisibility(true);
+  me.shadow.setVisibility(false);
   ge.getFeatures().appendChild(me.shadow);
+
+	places = getPlaces();
+	customers = getCustomers();
+	showCustomers(me);
+	createCompass(me);
 
   google.earth.addEventListener(ge, "frameend", function() { me.tick(); });
 
@@ -219,16 +229,17 @@ function isColliding(t) {
     var result = ge.getView().hitTest(screencoords.getX(), screencoords.getXUnits(), screencoords.getY(), screencoords.getYUnits(), ge.HIT_TEST_BUILDINGS);
     if (result != null) {
         var d = distance(lat, lon, result.getLatitude(), result.getLongitude());
-        if (d < 5) {
-            alert('collision! ' + d);
+        if (d < 8) {
+            return d;
         }
     }
+    return null
     
 }
 
 Truck.prototype.tick = function() {
   var me = this;
-  isColliding(me);
+  
   var now = (new Date()).getTime();
   // dt is the delta-time since last tick, in seconds
   var dt = (now - me.lastMillis) / 1000.0;
@@ -236,6 +247,7 @@ Truck.prototype.tick = function() {
     dt = 0.25;
   }
   me.lastMillis = now;
+  me.lastCollision = 0;
 
   var c0 = 1;
   var c1 = 0;
@@ -370,6 +382,13 @@ Truck.prototype.tick = function() {
   me.vel[2] -= GRAVITY * dt;
 
   // Move.
+  d = isColliding(me);
+  if(d != null && now - me.lastCollision > 500) {
+    me.vel = V3.scale(me.vel, -0.30);
+    me.pos = V3.add(me.pos, V3.scale(me.vel, 4*dt));
+  }
+
+  
   var deltaPos = V3.scale(me.vel, dt);
   me.pos = V3.add(me.pos, deltaPos);
 
@@ -384,6 +403,7 @@ Truck.prototype.tick = function() {
   }
 
   var normal = estimateGroundNormal(gpos, me.localFrame);
+  
   
   if (!airborne) {
     // Cancel velocity into the ground.
@@ -403,6 +423,8 @@ Truck.prototype.tick = function() {
     me.modelFrame = M33.makeOrthonormalFrame(dir, blendedUp);
   }
 
+  
+  
   // Propagate our state into Earth.
   gpos = V3.add(me.localAnchorCartesian,
                 M33.transform(me.localFrame, me.pos));
@@ -434,32 +456,48 @@ Truck.prototype.tick = function() {
   me.tickPopups(dt);
   
   me.cameraFollow(dt, gpos, me.localFrame);
-
+	
 	var speed = V3.length(me.vel);
+	var realPos = new Array(me.model.getLocation().getLatitude(),
+		me.model.getLocation().getLongitude());
+	var realGPos = new GLatLng(realPos[0], realPos[1]);
+	
+	map.panTo(realGPos);
+	playerMarker.setLatLng(realGPos);
+	
 	if (hasCustomer) {
-		var dist = distance(me.model.getLocation().getLatitude(),
-			me.model.getLocation().getLongitude(),
+		var dist = distance(realPos[0], realPos[1],
 			placemark.getGeometry().getLatitude(),
 			placemark.getGeometry().getLongitude());
 
 		if (dist < 10 && speed < 5) {
 			ge.getFeatures().removeChild(placemark);
+			ge.getFeatures().removeChild(destPointer);
 			hasCustomer = false;
-			showCustomers();
+			showCustomers(me);
 		}
 	} else {
+		for (var b = 0; b < customers.length; b++) {
+			var d = distance(realPos[0], realPos[1],
+				customers[b][1], customers[b][2]);
+			if (d < PASSENGER_THRESHOLD && !custIsVisible[b]) {
+				addPersonmark(b);
+			}
+		}
 		for (var a = 0; a < personmarks.length; a++) {
-			var dist = distance(me.model.getLocation().getLatitude(),
-				me.model.getLocation().getLongitude(),
+			var dist = distance(realPos[0], realPos[1],
 				personmarks[a].getGeometry().getLatitude(),
 				personmarks[a].getGeometry().getLongitude());
-
-			if (dist < 10 && speed < 5) {
+			
+			if (dist > PASSENGER_THRESHOLD) {
+				removePersonmark(a);
+			} else if (dist < 10 && speed < 5) {
 				for (var b = 0; b < personmarks.length; b++) {
 					ge.getFeatures().removeChild(personmarks[b]);
 				}
 				hasCustomer = true;
-				newDestination();
+				ge.getFeatures().appendChild(destPointer);
+				newDestination(me);
 				break;
 			}
 		}
@@ -710,6 +748,20 @@ function distance(lat1, lng1, lat2, lng2) {
   return d;
 }
 
+/* Helper function, courtesy of
+   http://www.movable-type.co.uk/scripts/latlong.html */
+
+function bearing(lat1, lng1, lat2, lng2) {
+	var dLon = (lng2-lng1).toRad();
+  var aLat1 = lat1.toRad();
+  var aLat2 = lat2.toRad();
+	var y = Math.sin(dLon) * Math.cos(aLat2);
+	var x = Math.cos(aLat1)*Math.sin(aLat2) -
+		Math.sin(aLat1)*Math.cos(aLat2)*Math.cos(dLon);
+	var result = Math.atan2(y, x) * 180 / Math.PI;
+	return result;
+}
+
 
 function getPlaces() {
   var result = new Array();
@@ -765,7 +817,7 @@ function getPlaces() {
   return result;
 }
 
-function newDestination() {
+function newDestination(me) {
   curPlace = Math.floor(Math.random()*places.length);
   
   placemark = ge.createPlacemark('');
@@ -783,43 +835,67 @@ function newDestination() {
   placemark.setGeometry(point);
   
   ge.getFeatures().appendChild(placemark);
-  number = number + 1;
+  passengerCounter = passengerCounter + 1;
 	document.getElementById('destination').innerHTML = "Find the next red marker and bring the passengers to <b>" + places[curPlace][0] + "</b>";
-	document.getElementById('number').innerHTML = "Passenger counter: <b>" + number + "</b>";
+	document.getElementById('number').innerHTML = "Passenger counter: <b>" + passengerCounter + "</b>";
+	
+	directions = new GDirections(map);
+  directions.load("from: " + me.model.getLocation().getLatitude().toString()
+		+ "," + me.model.getLocation().getLongitude().toString()
+		+ " to: " + places[curPlace][1].toString()
+		+ "," + places[curPlace][2].toString());
 }
 
 
+function handleErrors() {
+	document.getElementById('destination').innerHTML = "oh no";
+}
+
 function getCustomers() {
 	var result = new Array();
+	custIsVisible = new Array();
 
 	//first item = index # (in places array) of the destination they want to go to
-	result[0] = new Array(2, 42.355778, -71.066667);
+	/*result[0] = new Array(2, 42.355778, -71.066667);
 	result[1] = new Array(0, 42.355778, -71.065667);
-	result[2] = new Array(1, 42.355778, -71.064667);
-	//result[2] = new Array(1, 42.395778, -71.068667);
+	result[2] = new Array(1, 42.355778, -71.064667);*/
+	
+	var minLon = -71.073611;
+	var maxLon = -71.049722;
+	var minLat = 41.351944;
+	var maxLat = 42.368611;
+	for (var a = 0; a < NUM_PASSENGERS; a++) {
+		var x = Math.random()*(maxLon-minLon)+minLon;
+		var y = Math.random()*(maxLat-minLat)+minLat;
+		var l = Math.random()*places.length;
+		
+		result[a] = new Array(l, y, x);
+		custIsVisible[a] = false;
+	}
 
 	return result;
 }
 
-function showCustomers() {
+function showCustomers(me) {
+	if (directions != null){
+		directions.clear();
+	}
 	personmarks = new Array();
+	pmIndices = new Array();
+	var minD = -1;
 	for (var a = 0; a < customers.length; a++) {
-		personmarks[a] = ge.createPlacemark('');
-
-		var icon = ge.createIcon('');
-		icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
-		var style = ge.createStyle('');
-		style.getIconStyle().setIcon(icon);
-		personmarks[a].setStyleSelector(style);
-
-		var point = ge.createPoint('');
-		point.setLatitude(customers[a][1]);
-		point.setLongitude(customers[a][2]);
-		personmarks[a].setGeometry(point);
-
-		ge.getFeatures().appendChild(personmarks[a]);
+		var d = distance(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				customers[a][1], customers[a][2]);
+		if (minD == -1 || d < minD) {
+			minD = d;
+		}
+		if (d < PASSENGER_THRESHOLD) {
+			addPersonmark(a);
+		}
 	}
 	document.getElementById('destination').innerHTML = "<b>Find the yellow marker and brake to pick up a passenger!</b>";
+	//document.getElementById('destination').innerHTML = minD.toString();
 }
 
 function changeTextColor() {
@@ -827,4 +903,68 @@ function changeTextColor() {
   document.getElementById('number').style.color = '#ffffff';
   document.getElementById('timerRow').style.color = '#ffffff';
   
+}
+
+function addPersonmark(ind) {
+	personmarks.push(ge.createPlacemark(''));
+	pmIndices.push(ind);
+		
+	var icon = ge.createIcon('');
+	icon.setHref('http://maps.google.com/mapfiles/ms/micons/yellow-dot.png');
+	var style = ge.createStyle('');
+	style.getIconStyle().setIcon(icon);
+	personmarks[personmarks.length - 1].setStyleSelector(style);
+	
+	var point = ge.createPoint('');
+	point.setLatitude(customers[ind][1]);
+	point.setLongitude(customers[ind][2]);
+	personmarks[personmarks.length - 1].setGeometry(point);
+	
+	custIsVisible[ind] = true;
+	ge.getFeatures().appendChild(personmarks[personmarks.length - 1]);
+}
+
+function removePersonmark(ind) {
+	custIsVisible[pmIndices[ind]] = false;
+	ge.getFeatures().removeChild(personmarks[ind]);
+	personmarks.splice(ind,1);
+	pmIndices.splice(ind,1);
+}
+
+function createCompass(me) {
+  // create compass
+  var icon = ge.createIcon('');
+  icon.setHref('http://earth-api-samples.googlecode.com/svn/trunk/demos/milktruck/compass.png');
+  
+  var compass = ge.createScreenOverlay('');
+  compass.setDrawOrder(1);
+  compass.setIcon(icon);
+  compass.getScreenXY().set(0.5, ge.UNITS_FRACTION, 0.5, ge.UNITS_FRACTION);
+  compass.getOverlayXY().set(0.5, ge.UNITS_FRACTION, 50, ge.UNITS_INSET_PIXELS);
+  compass.getSize().set(74, ge.UNITS_PIXELS, 74, ge.UNITS_PIXELS);
+  ge.getFeatures().appendChild(compass);
+	
+	var icon2 = ge.createIcon('');
+  icon2.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
+  
+  destPointer = ge.createScreenOverlay('');
+  destPointer.setDrawOrder(1);
+  destPointer.setIcon(icon2);
+  destPointer.getScreenXY().set(0.5, ge.UNITS_FRACTION, 0.5, ge.UNITS_FRACTION);
+  destPointer.getOverlayXY().set(0.5, ge.UNITS_FRACTION, 24, ge.UNITS_INSET_PIXELS);
+	destPointer.getRotationXY().set(0.5, ge.UNITS_FRACTION, 100, ge.UNITS_INSET_PIXELS);
+  destPointer.getSize().set(24, ge.UNITS_PIXELS, 24, ge.UNITS_PIXELS); //native: 64x64
+  //ge.getFeatures().appendChild(destPointer);
+  
+  google.earth.addEventListener(ge.getView(), 'viewchange', function() {
+    var compassHeading = truck.model.getOrientation().getHeading();
+		if (hasCustomer) {
+			var placemarkBearing = bearing(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				placemark.getGeometry().getLatitude(),
+				placemark.getGeometry().getLongitude());
+			destPointer.setRotation(compassHeading - placemarkBearing);
+		}
+		compass.setRotation(compassHeading);
+  });
 }
