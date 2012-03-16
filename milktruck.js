@@ -62,6 +62,8 @@ var pmIndices = null;
 var customers = null;
 var custIsVisible = null;
 
+var destPointer = null;
+
 function Truck() {
   var me = this;
 
@@ -146,6 +148,7 @@ Truck.prototype.finishInit = function(kml) {
 	places = getPlaces();
 	customers = getCustomers();
 	showCustomers(me);
+	createCompass(me);
 
   google.earth.addEventListener(ge, "frameend", function() { me.tick(); });
 
@@ -463,6 +466,7 @@ Truck.prototype.tick = function() {
 
 		if (dist < 10 && speed < 5) {
 			ge.getFeatures().removeChild(placemark);
+			ge.getFeatures().removeChild(destPointer);
 			hasCustomer = false;
 			showCustomers(me);
 		}
@@ -486,6 +490,7 @@ Truck.prototype.tick = function() {
 					ge.getFeatures().removeChild(personmarks[b]);
 				}
 				hasCustomer = true;
+				ge.getFeatures().appendChild(destPointer);
 				newDestination();
 				break;
 			}
@@ -737,6 +742,20 @@ function distance(lat1, lng1, lat2, lng2) {
   return d;
 }
 
+/* Helper function, courtesy of
+   http://www.movable-type.co.uk/scripts/latlong.html */
+
+function bearing(lat1, lng1, lat2, lng2) {
+	var dLon = (lng2-lng1).toRad();
+  var aLat1 = lat1.toRad();
+  var aLat2 = lat2.toRad();
+	var y = Math.sin(dLon) * Math.cos(aLat2);
+	var x = Math.cos(aLat1)*Math.sin(aLat2) -
+		Math.sin(aLat1)*Math.cos(aLat2)*Math.cos(dLon);
+	var result = Math.atan2(y, x) * 180 / Math.PI;
+	return result;
+}
+
 
 function getPlaces() {
   var result = new Array();
@@ -889,4 +908,42 @@ function removePersonmark(ind) {
 	ge.getFeatures().removeChild(personmarks[ind]);
 	personmarks.splice(ind,1);
 	pmIndices.splice(ind,1);
+}
+
+function createCompass(me) {
+  // create compass
+  var icon = ge.createIcon('');
+  icon.setHref('http://earth-api-samples.googlecode.com/svn/trunk/demos/milktruck/compass.png');
+  
+  var compass = ge.createScreenOverlay('');
+  compass.setDrawOrder(1);
+  compass.setIcon(icon);
+  compass.getScreenXY().set(0.5, ge.UNITS_FRACTION, 0.5, ge.UNITS_FRACTION);
+  compass.getOverlayXY().set(0.5, ge.UNITS_FRACTION, 50, ge.UNITS_INSET_PIXELS);
+  compass.getSize().set(74, ge.UNITS_PIXELS, 74, ge.UNITS_PIXELS);
+  ge.getFeatures().appendChild(compass);
+	
+	var icon2 = ge.createIcon('');
+  icon2.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
+  
+  destPointer = ge.createScreenOverlay('');
+  destPointer.setDrawOrder(1);
+  destPointer.setIcon(icon2);
+  destPointer.getScreenXY().set(0.5, ge.UNITS_FRACTION, 0.5, ge.UNITS_FRACTION);
+  destPointer.getOverlayXY().set(0.5, ge.UNITS_FRACTION, 24, ge.UNITS_INSET_PIXELS);
+	destPointer.getRotationXY().set(0.5, ge.UNITS_FRACTION, 100, ge.UNITS_INSET_PIXELS);
+  destPointer.getSize().set(24, ge.UNITS_PIXELS, 24, ge.UNITS_PIXELS); //native: 64x64
+  //ge.getFeatures().appendChild(destPointer);
+  
+  google.earth.addEventListener(ge.getView(), 'viewchange', function() {
+    var compassHeading = truck.model.getOrientation().getHeading();
+		if (hasCustomer) {
+			var placemarkBearing = bearing(me.model.getLocation().getLatitude(),
+				me.model.getLocation().getLongitude(),
+				placemark.getGeometry().getLatitude(),
+				placemark.getGeometry().getLongitude());
+			destPointer.setRotation(compassHeading - placemarkBearing);
+		}
+		compass.setRotation(compassHeading);
+  });
 }
