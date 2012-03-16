@@ -589,7 +589,7 @@ Truck.prototype.showIdlePopup = function() {
 var FAST_MESSAGES = [
     "We're flying!",
     "Wheeeeeeeeee!",
-    "<font size=+5 color=#8080FF>Crazy Taxi!</font>",
+    "<font size=+5 color=#8080FF>Crazy!</font>",
     "Oh yay! We're gonna arrive in a few seconds!"
                      ];
 Truck.prototype.showFastPopup = function() {

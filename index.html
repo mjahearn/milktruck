@@ -31,6 +31,11 @@ function Up() {
 	if((cmin1==min1)&&(csec1==sec1)) alert("Time's up!");
 	else up=setTimeout("UpRepeat()",1000); }
 function Down() {
+	clearTimeout(down);
+	passengerCounter = 0;
+	money = 0;
+	document.getElementById('number').innerHTML = "Passenger counter: <b>0</b>";
+	document.getElementById('money').innerHTML = "Money earned: <b>0</b>";
 	cmin2=1*Minutes(document.sw.beg2.value);
 	csec2=0+Seconds(document.sw.beg2.value);
 	DownRepeat(); }
@@ -161,7 +166,7 @@ function doGeocode(address) {
 		<div id='map3d'></div>
 		</td><FORM name="sw" >
 		<td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />
-	      (Starts at
+	      (Enter a time limit:
             <input type="text" name="beg2" size="7" value="3:30" />
 	      Time remaining:
 <input type="text" name="disp2" size="9" />        
