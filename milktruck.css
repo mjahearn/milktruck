@@ -9,7 +9,7 @@ textarea {
 form {
   border: 1px solid silver; 
   padding: 3px; 
-  background: #fafafa; 
+  background: #111; 
   margin-bottom: 0px; 
   width: 100%
 }
@@ -38,8 +38,12 @@ form {
 
 #map3d {
   border: 1px solid silver; 
-  height: 600px;
-  width: 1024px
+  height: 450px;
+  width: 600px
+}#map2d {
+  border: 1px solid silver; 
+  height: 200px;
+  width: 200px
 }
 
 #load_sample_label {  
@@ -63,5 +67,8 @@ form {
 	color: #FFF;
 }
 #number {
+	color: #FFF;
+}
+#timerRow {
 	color: #FFF;
 }

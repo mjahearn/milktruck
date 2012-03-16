@@ -61,8 +61,10 @@ limitations under the License.
 -->
   <title>The Ride!</title>
   <link rel=stylesheet href='milktruck.css' type='text/css' />
+	<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script> -->
   <!-- *** Replace the key below below with your own API key, available at http://code.google.com/apis/maps/signup.html *** -->
-  <script src="http://www.google.com/jsapi?key=ABQIAAAAwbkbZLyhsmTCWXbTcjbgbRSzHs7K5SvaUdm8ua-Xxy_-2dYwMxQMhnagaawTo7L1FE1-amhuQxIlXw"></script>
+ <script src="https://www.google.com/jsapi"></script>
+ <script src="//maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key=AIzaSyD4iE2xVSpkLLOXoyqT-RuPwURN3ddScAI" type="text/javascript"></script>
   <script type="text/javascript" src="lib/math3d.js"></script>
   <script type="text/javascript" src="lib/keyboard-focus-hack.js"></script>
   <script type="text/javascript" src="lib/kmldomwalk.js"></script>
@@ -74,6 +76,8 @@ google.load("maps", "2");
 var ge = null;
 var geocoder;
 var truck;
+var map = null;
+var playerMarker = null;
 
 function el(e) { return document.getElementById(e); }
 
@@ -87,7 +91,12 @@ var samples = [];
 
 function init() {
   geocoder = new GClientGeocoder();
-
+	map = new GMap2(document.getElementById("map2d"));
+	map.setCenter(new GLatLng(42.352778, -71.066667), 15);
+	var playerIcon = new GIcon(G_DEFAULT_ICON);
+	playerIcon.image = "http://www.google.com/mapfiles/dd-start.png";
+	playerMarker = new GMarker(new GLatLng(42.352778, -71.066667), { icon:playerIcon });
+	map.addOverlay(playerMarker);
   init3D();
 }
 
@@ -131,33 +140,29 @@ function doGeocode(address) {
 </head>
 <body onload='init()' onunload="GUnload()" onKeyDown="return keyDown(event);" onKeyUp="return keyUp(event);" bgcolor="#000000">
 <center>
-  <div class="title">
-    <center>
-      <img src="title.png" title="title" align="middle" height="160" width="320"/>
-    </center>
-  </div>
-<FORM name="sw" >
 	<table border=3 bgcolor="#000000">
-	  <tr>
-	    <td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />
+		<tr>
+			<td id='destination'>Destination: <b>N/A</b></td>
+			<td><div class="title">
+				<center>
+					<img src="title.png" title="title" align="middle" height="160" width="320"/>
+				</center>
+				</div>
+			</td>
+			<td id='number'>Passenger counter: <b>0</b></td>
+		</tr>
+		<tr><td rowspan="3" colspan="2">
+		<div id='map3d'></div>
+		</td><FORM name="sw" >
+		<td id='timerRow'><input type="button" value="Start a new game!" onclick="Down()" />
 	      (Starts at
             <input type="text" name="beg2" size="7" value="1:30" />
 	      Time remaining:
 <input type="text" name="disp2" size="9" />        
-        )<br /></td>
+        )</td></FORM>    
       </tr>
-</FORM>        
-	  <tr>
-	<td id='destination'>Destination: <b>N/A</b></td>
-	</tr>
-	  <tr>
-	    <td id='number'>Passenger counter: <b>0</b></td>
-      </tr>
-	  <tr><td>
-  <div id='map3d'></div>
-	</td></tr>
     <tr>
-      <td>
+      <td id='instructions'>
 	To drive: use keyboard arrows (with focus on page).
 
 	<div>
@@ -174,6 +179,10 @@ function doGeocode(address) {
 
       </td>
     </tr>
+		<tr>
+			<td><div id='map2d'></div>
+			</td>
+		</tr>
   </table>
 
 </center>
